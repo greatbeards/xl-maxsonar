@@ -17,29 +17,20 @@ PLATFORMS: list[str] = ["sensor"]
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the XL-max sonar sensor component."""
 
-    serial_port="/dev/ttyAMA0"
+    serial_port="/dev/tty"
     baudrate=9600
     timeout=10
 
     loop = asyncio.get_event_loop()
-    async def reader(server):
-        
-        transport, protocol = await serial_asyncio.create_serial_connection(loop, server, serial_port, baudrate=baudrate)
+    coro = serial_asyncio.create_serial_connection(loop, XLMaxSonar, serial_port, baudrate=baudrate)
 
-        while True:
-            await asyncio.sleep(0.3)
-            protocol.resume_reading()
+    #run the server
+    transport, protocol = await hass.async_add_job(coro)
 
-    server = XLMaxSonar()
-
-    hass.data[DOMAIN] = server
+    hass.data[DOMAIN] = protocol
 
     #load sensors
     hass.helpers.discovery.load_platform("sensor", DOMAIN, {}, config)
 
-    #run the server 
-    hass.async_add_job(reader(server))
-
     return True
-
 

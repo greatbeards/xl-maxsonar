@@ -1,6 +1,6 @@
 from curses import baudrate
 import logging
-
+ 
 LOGGER = logging.getLogger(__package__)
 DOMAIN = "XL_MaxSonar"
 SERIAL_PORT = "/dev/ttyAMA0"

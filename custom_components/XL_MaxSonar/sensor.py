@@ -53,10 +53,10 @@ def setup_platform(
     server = hass.data[DOMAIN]
 
     #TODO: use device ID from config
-    device_id = "one" 
+    device_id = "one"
     new_devices = []
 
-    
+
     descr = SensorEntityDescription(
         key = 'distance',
         name = 'distance',
@@ -66,7 +66,7 @@ def setup_platform(
     )
 
     new_devices.append(Sensor(device_id, descr, server))
-    
+
     #Sensor(device_id, descr, server)
     #for name in server.get_fields():
     #    descr = create_entity_descr(name)
@@ -163,10 +163,10 @@ class Sensor(SensorEntity):
         """Return the name of the sensor."""
         return f"{self._name}"
 
-    @property
-    def available(self) -> bool:
-        """Return True if roller and hub is available."""
-        return self._server.client_connected
+    #@property
+    #def available(self) -> bool:
+    #    """Return True if roller and hub is available."""
+    #    return True
 
     async def async_added_to_hass(self):
         """Run when this Entity has been added to HA."""

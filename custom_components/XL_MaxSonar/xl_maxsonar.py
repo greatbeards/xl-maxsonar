@@ -25,7 +25,7 @@ import serial_asyncio
 class XLMaxSonar(asyncio.Protocol):
     """Basic implementation for XLMaxSonar"""
 
-    def __init__( self , regex = r"R(\d+)\s", val_names=["distance"]):
+    def __init__( self , regex = r"R(\d+)\s", val_names=["distance"], extra_arg=None):
         super().__init__()
         self._callbacks = set()
         self._raw_callbacks = set()
@@ -34,8 +34,9 @@ class XLMaxSonar(asyncio.Protocol):
         self.regex = regex
         self.match = None
         self.debug = None
-        self.parsed_data = None
+        self.parsed_data = dict(zip(val_names, [None]*len(val_names)))
         self.val_names = val_names
+        print(extra_arg)
 
     def get_fields(self):
         return self.val_names
@@ -46,7 +47,7 @@ class XLMaxSonar(asyncio.Protocol):
     def data_received(self, data):
         self.buffer += data
 
-        self.pause_reading() # required?
+        #self.pause_reading() # required?
 
         if self.debug:
             print('data buffer', repr(self.buffer))
@@ -57,10 +58,10 @@ class XLMaxSonar(asyncio.Protocol):
         for matchNum, match in enumerate(matches, start=1):
             if self.debug:
                 print ("Match {matchNum} was found at {start}-{end}: {match}".format(matchNum = matchNum, start = match.start(), end = match.end(), match = match.group()))
-            
+
             match_cnt = matchNum
             self.match = match
-            
+
         if match_cnt:
             self.buffer = b''
 
@@ -72,17 +73,17 @@ class XLMaxSonar(asyncio.Protocol):
 
                 name = self.val_names[groupNum]
                 match_dict[name] = self.match.group(groupNum + 1)
-            
+
             self.parsed_data = match_dict
             print(match_dict)
 
-            #send update   
+            #send update
             self.publish_updates()
             self.publish_raw_updates()
 
-        self.resume_reading()
+        #self.resume_reading()
 
-        
+
 
     def pause_reading(self):
         # This will stop the callbacks to data_received
@@ -92,6 +93,11 @@ class XLMaxSonar(asyncio.Protocol):
         # This will start the callbacks to data_received again with all data that has been received in the meantime.
         self.transport.resume_reading()
 
+    def get_value(self, name):
+        if name in self.parsed_data:
+            return self.parsed_data[name]
+        raise Exception('Unknown value requested: ' + str(name))
+        return None
 
     @property
     def data(self):
@@ -121,25 +127,20 @@ class XLMaxSonar(asyncio.Protocol):
         self._raw_callbacks.add(callback)
 
 
-     
+
 
 if __name__ == "__main__":
-    serial_port="COM7"
+    serial_port="/dev/tty"
     baudrate=9600
     timeout=10
 
-    async def reader(server):
-        
-        transport, protocol = await serial_asyncio.create_serial_connection(loop, server, serial_port, baudrate=baudrate)
-
-        while True:
-            await asyncio.sleep(0.3)
-            protocol.resume_reading()
-
-    server = XLMaxSonar()
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(reader(server))
-    loop.close()
+    coro = serial_asyncio.create_serial_connection(loop, XLMaxSonar, serial_port, baudrate=baudrate, )
+
+    transport, protocol = loop.run_until_complete(coro)
+    print(dir(transport))
+    print(dir(protocol))
+    #loop.close()
 
 

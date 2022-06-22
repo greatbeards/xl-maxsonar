@@ -1,7 +1,8 @@
 {
     "codeowners": ["@greatbeards"],
     "config_flow": false,
-    "dependencies": ["serial_asyncio"],
+    "dependencies": [],
+    "dependencies+new": ["pyserial-asyncio==0.6"],
     "documentation": "https://github.com/greatbeards/xl-maxsonar",
     "domain": "XL_MaxSonar",
     "iot_class": "local_push",
