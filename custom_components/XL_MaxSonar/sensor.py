@@ -38,7 +38,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 import logging
 _LOGGER = logging.getLogger(__name__)
 
-from .solis_solarman import SolarmanServer
+from .xl_maxsonar import XLMaxSonar
 from .const import DOMAIN
 
 
@@ -56,17 +56,21 @@ def setup_platform(
     device_id = "one" 
     new_devices = []
 
-    sed = SensorEntityDescription(
+    
+    descr = SensorEntityDescription(
         key = 'distance',
         name = 'distance',
         native_unit_of_measurement = LENGTH_METERS,
-        device_class=_extract_device_class(name),
-        state_class=_extract_state_class(name),
+        #device_class=,
+        #state_class=_extract_state_class(name),
+    )
 
-    Sensor(device_id, descr, server)
-    for name in server.get_fields():
-        descr = create_entity_descr(name)
-        new_devices.append(Sensor(device_id, descr, server))
+    new_devices.append(Sensor(device_id, descr, server))
+    
+    #Sensor(device_id, descr, server)
+    #for name in server.get_fields():
+    #    descr = create_entity_descr(name)
+    #    new_devices.append(Sensor(device_id, descr, server))
     if new_devices:
         add_entities(new_devices)
         _LOGGER.warning(f"Added new devices {new_devices}")
@@ -130,7 +134,7 @@ class Sensor(SensorEntity):
     should_poll = False
 
     def __init__(
-        self, device_id, descr: SensorEntityDescription, server: SolarmanServer
+        self, device_id, descr: SensorEntityDescription, server: XLMaxSonar
     ):
         """Initialize the sensor."""
         self.entity_description = descr
